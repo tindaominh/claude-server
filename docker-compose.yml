@@ -1,0 +1,138 @@
+version: '3.8'
+
+x-logging: &log_limit
+  logging:
+    x-log-driver: 'json-file'
+    x-log-opts:
+      max-size: '1M'
+      max-file: 3
+
+services:
+  # MCP Server
+  mcp-server-claude:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mcp-server-claude
+    ports:
+      - "3000:3000"
+      - "9229:9229"  # Debug port
+    environment:
+      - NODE_ENV=development
+      - MCP_MODE=http
+    env_file:
+      - .env.local
+      - .env.development
+    volumes:
+      - ./src:/app/src
+      - ./workspace:/app/workspace
+      - ./logs:/app/logs
+      - /app/node_modules
+    networks:
+      - mcp-network
+    depends_on:
+      - mysql
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    # platform: linux/x86_64
+    container_name: mcp-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mcp_claude
+      MYSQL_USER: mcp_user
+      MYSQL_PASSWORD: mcp_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/schema/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  adminer:
+    image: adminer:standalone
+    platform: linux/x86_64
+    restart: always
+    depends_on:
+      - mysql
+    ports:
+      - 8080:8080
+    networks:
+      - mcp-network
+    <<: *log_limit
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: mcp-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    command: redis-server --appendonly yes
+  redis-commander:
+    image: rediscommander/redis-commander:redis-commander-210
+    platform: linux/x86_64
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    networks:
+      - mcp-network
+    depends_on:
+      - redis
+
+  # PgAdmin (Optional)
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   container_name: mcp-pgadmin
+  #   ports:
+  #     - "5050:80"
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@mcp.local
+  #     PGADMIN_DEFAULT_PASSWORD: admin_password_123
+  #   volumes:
+  #     - pgadmin_data:/var/lib/pgadmin
+  #   networks:
+  #     - mcp-network
+  #   restart: unless-stopped
+  #   profiles:
+  #     - admin
+
+networks:
+  mcp-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  # pgadmin_data:
+  #   driver: local

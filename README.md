@@ -1,202 +1,315 @@
 # MCP Server for Claude
 
-## Architecture Overview
+A comprehensive Model Context Protocol (MCP) server for Claude AI integration with user authentication, rate limiting, and Docker support.
 
-Based on the flow diagram analysis, this is a comprehensive MCP (Model Context Protocol) server that runs in Docker containers and provides various tools and services for Claude AI integration.
+## Features
 
-## System Components
+- 🔐 **User Authentication**: JWT-based authentication with API key support
+- 🚦 **Rate Limiting**: Per-user rate limiting with configurable limits
+- 🛠️ **MCP Tools**: File operations, web search, database queries, and more
+- 🐳 **Docker Support**: Complete Docker setup with MySQL and Redis
+- 📊 **Audit Logging**: Comprehensive logging and monitoring
+- 🔌 **STDIO Support**: Claude Desktop integration via STDIO
+- 🌐 **REST API**: HTTP API for web and mobile applications
 
-### Core Infrastructure
-- **MCP Server Container** - Node.js 22 + TypeScript + Express.js (Port: 3000)
-- **MySQL Database** - Data persistence (Port: 5432, Database: mcp_claude)
-- **Redis Cache** - In-memory caching and session store (Port: 6379)
-- **PgAdmin** - Optional database management GUI (Port: 5050)
-- **Docker Network** - Isolated bridge network for container communication
+## Architecture
 
-## Required Functions to Develop
+The server consists of:
 
-### 1. Core Server Functions (`src/server.ts`)
-- [ ] Express.js server initialization
-- [ ] Database connection setup (MySQL)
-- [ ] Redis connection setup
-- [ ] Middleware configuration (CORS, logging, authentication)
-- [ ] Error handling middleware
-- [ ] Health check endpoint
-- [ ] Graceful shutdown handling
+- **MCP Server Container**: Node.js 22 with TypeScript and Express.js
+- **MySQL Database**: User management, audit logs, and tool configurations
+- **Redis Cache**: Session storage and rate limiting
+- **Optional Services**: Adminer (DB management), Redis Commander
 
-### 2. MCP STDIO Handler (`src/mcp-stdio.ts`)
-- [ ] STDIO protocol implementation
-- [ ] Message parsing and validation
-- [ ] Tool registration and discovery
-- [ ] Response formatting
-- [ ] Error handling for MCP protocol
+## Quick Start
 
-### 3. API Routes (`src/routes/`)
-- [ ] `index.ts` - Main router
-- [ ] `health.ts` - Health check endpoints
-- [ ] `tools.ts` - MCP tool management endpoints
-- [ ] `sessions.ts` - Session management endpoints
-- [ ] `auth.ts` - Authentication endpoints
+### Prerequisites
 
-### 4. Business Logic Services (`src/services/`)
-- [ ] `database.ts` - Database connection and query service
-- [ ] `cache.ts` - Redis cache operations
-- [ ] `claude.ts` - Claude API integration service
-- [ ] `session.ts` - Session management service
-- [ ] `auth.ts` - Authentication and authorization service
-- [ ] `logger.ts` - Logging service
+- Docker and Docker Compose
+- Node.js 22+ (for local development)
+- Claude API key
 
-### 5. MCP Tools (`src/tools/`)
-- [ ] `file-operations.ts` - File read/write/list operations
-- [ ] `web-search.ts` - Web search functionality
-- [ ] `database-query.ts` - Database query tools
-- [ ] `code-execution.ts` - Safe code execution environment
-- [ ] `api-caller.ts` - External API integration tools
-- [ ] `data-processor.ts` - Data transformation tools
-
-### 6. Middleware (`src/middleware/`)
-- [ ] `auth.ts` - Authentication middleware
-- [ ] `logging.ts` - Request/response logging
-- [ ] `rate-limit.ts` - Rate limiting
-- [ ] `validation.ts` - Input validation
-- [ ] `error-handler.ts` - Error handling
-- [ ] `cors.ts` - Cross-origin resource sharing
-
-### 7. Utilities (`src/utils/`)
-- [ ] `config.ts` - Configuration management
-- [ ] `logger.ts` - Logging utilities
-- [ ] `validator.ts` - Data validation utilities
-- [ ] `crypto.ts` - Encryption/decryption utilities
-- [ ] `file-utils.ts` - File system utilities
-- [ ] `date-utils.ts` - Date/time utilities
-
-### 8. Database Schema
-- [ ] Users table - User management
-- [ ] Sessions table - Session storage
-- [ ] Tools table - Available MCP tools
-- [ ] Audit_log table - Activity logging
-- [ ] Config table - Server configuration
-
-### 9. Docker Configuration
-- [ ] `Dockerfile.dev` - Development container
-- [ ] `docker-compose.yml` - Multi-container setup
-- [ ] `docker/.env` - Environment variables
-- [ ] Volume mounting for development
-- [ ] Network configuration
-
-### 10. Configuration Files
-- [ ] `package.json` - Dependencies and scripts
-- [ ] `tsconfig.json` - TypeScript configuration
-- [ ] `nodemon.json` - Development auto-restart
-- [ ] `claude_desktop_config.json` - Claude desktop integration
-- [ ] `.env.local` - Local environment variables
-
-### 11. Development Setup
-- [ ] TypeScript compilation setup
-- [ ] ESLint configuration
-- [ ] Prettier configuration
-- [ ] Testing framework (Jest)
-- [ ] Development scripts
-
-### 12. External Integrations
-- [ ] Claude API client implementation
-- [ ] HTTP client for external APIs
-- [ ] Web search integration
-- [ ] File system operations
-- [ ] Database connection pooling
-
-### 13. Security Features
-- [ ] API key management
-- [ ] JWT token handling
-- [ ] Input sanitization
-- [ ] Rate limiting
-- [ ] CORS configuration
-- [ ] Secure headers
-
-### 14. Monitoring & Logging
-- [ ] Structured logging
-- [ ] Performance metrics
-- [ ] Error tracking
-- [ ] Health checks
-- [ ] Audit trails
-
-### 15. Client Support
-- [ ] Claude Desktop App (STDIO protocol)
-- [ ] Web API (HTTP REST)
-- [ ] Mobile app API support
-- [ ] Postman/Insomnia testing support
-
-## Development Priority
-
-### Phase 1 - Core Infrastructure
-1. Basic Express server with TypeScript
-2. Docker containerization
-3. Database and Redis connections
-4. Basic health check endpoints
-
-### Phase 2 - MCP Protocol
-1. STDIO protocol implementation
-2. Tool registration system
-3. Basic tool implementations
-4. Claude desktop integration
-
-### Phase 3 - Advanced Features
-1. Authentication and security
-2. Advanced tool implementations
-3. External API integrations
-4. Monitoring and logging
-
-### Phase 4 - Production Ready
-1. Error handling and resilience
-2. Performance optimization
-3. Security hardening
-4. Documentation and testing
-
-## Environment Variables Required
+### 1. Clone and Setup
 
 ```bash
-# Server Configuration
-PORT=3000
-NODE_ENV=development
-
-# Database
-DB_HOST=mysql
-DB_PORT=5432
-DB_NAME=mcp_claude
-DB_USER=mcp
-DB_PASSWORD=your_password
-
-# Redis
-REDIS_HOST=redis
-REDIS_PORT=6379
-REDIS_PASSWORD=your_redis_password
-
-# Claude API
-CLAUDE_API_KEY=your_claude_api_key
-CLAUDE_API_URL=https://api.anthropic.com
-
-# Authentication
-JWT_SECRET=your_jwt_secret
-API_KEY=your_api_key
-
-# Logging
-LOG_LEVEL=info
-LOG_FILE=./logs/app.log
+git clone <repository-url>
+cd mcp-server-claude
 ```
 
-## Docker Network Architecture
+### 2. Environment Configuration
 
-- **Network Name**: `mcp-network` (bridge)
-- **Container Communication**: All services communicate through the Docker network
-- **External Access**: Only necessary ports exposed to host
-- **Volume Management**: Persistent data storage for database and Redis
-- **Development Bind Mount**: Local workspace mounted into container
+Copy the environment file and configure:
 
-## Next Steps
+```bash
+cp .env.development .env.local
+```
 
-1. Set up basic project structure
-2. Create Docker configuration
-3. Implement core server functionality
-4. Add MCP protocol support
-5. Develop essential tools
-6. Test and iterate
+Edit `.env.local` with your configuration:
+
+```env
+# Claude API Configuration
+CLAUDE_API_KEY=your_claude_api_key_here
+
+# Database Configuration
+DB_PASSWORD=your_secure_password
+
+# Authentication
+JWT_SECRET=your_jwt_secret_here
+API_KEY=your_api_key_here
+```
+
+### 3. Start with Docker
+
+```bash
+# Development environment
+docker-compose up -d
+
+# Production environment
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### 4. Verify Installation
+
+```bash
+# Check health
+curl http://localhost:3000/api/health
+
+# Check tools
+curl http://localhost:3000/api/tools
+```
+
+## API Endpoints
+
+### Authentication
+
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login user
+- `GET /api/auth/profile` - Get user profile (requires JWT)
+- `PUT /api/auth/profile` - Update user profile (requires JWT)
+- `POST /api/auth/api-key/regenerate` - Generate new API key (requires JWT)
+- `PUT /api/auth/rate-limit` - Update rate limit (requires JWT)
+- `GET /api/auth/usage` - Get usage statistics (requires JWT)
+
+### Tools
+
+- `GET /api/tools` - List available tools
+- `POST /api/tools/execute/:toolName` - Execute tool (requires API key)
+
+### Health
+
+- `GET /api/health` - Health check
+
+## Authentication Methods
+
+### 1. JWT Token Authentication
+
+Include the JWT token in the Authorization header:
+
+```bash
+curl -H "Authorization: Bearer <jwt_token>" http://localhost:3000/api/auth/profile
+```
+
+### 2. API Key Authentication
+
+Include the API key in the X-API-Key header:
+
+```bash
+curl -H "X-API-Key: mcp_<api_key>" http://localhost:3000/api/tools
+```
+
+## User Management
+
+### Register a User
+
+```bash
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "securepassword123"
+  }'
+```
+
+### Login
+
+```bash
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "password": "securepassword123"
+  }'
+```
+
+### Execute Tools
+
+```bash
+curl -X POST http://localhost:3000/api/tools/execute/file_operations \
+  -H "X-API-Key: mcp_<api_key>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "operation": "list",
+    "path": "/workspace"
+  }'
+```
+
+## Rate Limiting
+
+Each user has a configurable rate limit (default: 100 requests per hour). The rate limit is tracked per user and resets every hour.
+
+### Update Rate Limit
+
+```bash
+curl -X PUT http://localhost:3000/api/auth/rate-limit \
+  -H "Authorization: Bearer <jwt_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "rateLimitPerHour": 500
+  }'
+```
+
+## Claude Desktop Integration
+
+The server supports Claude Desktop integration via STDIO. To use with Claude Desktop:
+
+1. Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "mcp-server-claude": {
+      "command": "node",
+      "args": ["/path/to/dist/server.js"],
+      "env": {
+        "MCP_MODE": "stdio"
+      }
+    }
+  }
+}
+```
+
+2. Restart Claude Desktop
+
+## Development
+
+### Local Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
+
+### Database Management
+
+Access Adminer at http://localhost:8080:
+- Server: `mysql`
+- Username: `root`
+- Password: `root`
+- Database: `mcp_claude`
+
+Access Redis Commander at http://localhost:8081
+
+### Logs
+
+View application logs:
+
+```bash
+# Docker logs
+docker-compose logs -f mcp-server-claude
+
+# Local logs
+tail -f logs/app.log
+```
+
+## Production Deployment
+
+### 1. Environment Setup
+
+```bash
+cp .env.production .env.local
+# Edit .env.local with production values
+```
+
+### 2. Start Production Services
+
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### 3. Optional: Add Nginx
+
+```bash
+# Start with Nginx
+docker-compose -f docker-compose.prod.yml --profile nginx up -d
+```
+
+## Security Considerations
+
+- Change all default passwords and secrets
+- Use strong JWT secrets
+- Configure proper CORS origins
+- Set up SSL/TLS in production
+- Regularly update dependencies
+- Monitor audit logs
+
+## Monitoring
+
+The server includes comprehensive logging:
+
+- **Application Logs**: Request/response logging
+- **Audit Logs**: User actions and API usage
+- **Error Logs**: Detailed error information
+- **Health Checks**: Service availability monitoring
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Database Connection Failed**
+   - Check MySQL container is running
+   - Verify database credentials
+   - Check network connectivity
+
+2. **Redis Connection Failed**
+   - Check Redis container is running
+   - Verify Redis configuration
+
+3. **Authentication Issues**
+   - Verify JWT secret configuration
+   - Check API key format
+   - Ensure proper headers
+
+4. **Rate Limiting Issues**
+   - Check Redis connectivity
+   - Verify rate limit configuration
+   - Clear Redis cache if needed
+
+### Debug Mode
+
+Enable debug logging:
+
+```env
+LOG_LEVEL=debug
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+## License
+
+MIT License - see LICENSE file for details.

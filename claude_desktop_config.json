@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "mcp-server-claude": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "mcp-server-claude",
+        "npm",
+        "run",
+        "dev"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    }
+  }
+}
